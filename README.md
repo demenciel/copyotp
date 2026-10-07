@@ -20,6 +20,12 @@ Follow the [step-by-step Chrome Web Store release guide](PUBLISHING.md), includi
 the AlexWorks shared-consent-screen decision, store ID/OAuth binding, privacy
 declarations, and separate Google verification. Read the [privacy policy](PRIVACY.md).
 
+If your Google Cloud project quota is full, the guide's current path uses the
+existing AlexWorks project with a separate store-ID OAuth client. Pending project
+deletions do not free capacity immediately; a quota increase is an optional route
+to a dedicated production project later. Shared-project verification still
+needs to represent the other AlexWorks apps accurately.
+
 ## Build and Load
 
 Requires Node.js 22.18+ (or Node.js 24+) and Chrome 116+.

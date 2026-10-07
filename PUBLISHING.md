@@ -16,15 +16,10 @@ at project level. Each client still requests its own runtime scopes. CopyOTP
 requests only Gmail read-only; do not add other apps' scopes to its manifest.
 Google documents this [cross-client consent behavior](https://developers.google.com/identity/protocols/oauth2/cross-client-identity).
 
-**Recommended production arrangement:** keep the existing project and all four
-clients unchanged for now. Create a dedicated production Cloud project for
-CopyOTP, still published by AlexWorks. Name its consent app **CopyOTP by
-AlexWorks**. This gives it its own review, testing status, and revocation boundary
-without renaming or disrupting your other products. Keep the current working
-local setup for development. A separate project is isolation, not an exemption
-from Gmail verification.
-
-**If you keep the shared AlexWorks project:** preserve its name, clients,
+**Current release path: use the existing AlexWorks project.** Your project quota
+is full, so creating a new project is not a prerequisite for continuing this
+guide. First confirm that the active AlexWorks project is NOT scheduled for
+deletion. Preserve its name, all four existing clients,
 redirects, and existing scope declarations. Add a *new* Chrome Extension client
 for the store ID, leaving the unpacked-development client intact. Clearly list
 CopyOTP on AlexWorks' homepage and give it a dedicated privacy-policy section.
@@ -37,8 +32,33 @@ Production affects the shared consent app, not just CopyOTP. Revoking AlexWorks
 access may affect sibling apps. Don't delete or rename another app's client to
 make verification easier; plan any migrations separately.
 
-Stop here until the production-project choice is clear. Everything below works
-with either choice. Nothing in these instructions migrates existing apps.
+Treat this as one truthfully described AlexWorks product family, not a way to
+hide unrelated applications behind a verified client. Explain the relationship
+between products in the homepage, policy, and review submission. Google decides
+whether that shared arrangement meets its requirements. If Google requires
+separate production projects, use the quota-increase route below or wait for
+capacity before completing that part of the launch.
+
+**Optional later isolation:** when project capacity becomes available, a
+dedicated production project named **CopyOTP by AlexWorks** would give CopyOTP
+its own consent/review/revocation boundary. It is not needed to reserve the
+Web Store item, prepare assets, or continue testing now, and it does not remove
+Gmail verification. Don't migrate or delete sibling apps as part of this guide.
+
+### Project quota and the 30-day deletion window
+
+Projects pending deletion still count toward quota until permanent deletion
+after the 30-day recovery window. Scheduling more deletions does not immediately
+free slots. [Google's deletion/quota documentation](https://docs.cloud.google.com/resource-manager/docs/delete-restore-projects).
+
+You can request additional capacity through Google's
+[project quota increase process](https://support.google.com/cloud/answer/7283050).
+For an account without an organization, follow its **Request Project Quota
+Increase** form and explain the separate production OAuth project use case.
+Approval and turnaround are not guaranteed. Don't use extra accounts or projects
+to evade Google's quotas or verification. In the meantime, continue step 2 with
+the existing, active AlexWorks project; creating a client there is a different
+operation from creating a new Cloud project.
 
 ## 2. Register the publisher
 
