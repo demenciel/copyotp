@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>CopyOTP</title>
+  <link rel="stylesheet" href="popup.css">
+  <script type="module" src="popup.js"></script>
+</head>
+<body>
+  <header class="header">
+    <div class="brand"><span class="brand-mark"><i data-lucide="copy" aria-hidden="true"></i></span><span>CopyOTP</span></div>
+    <span class="provider"><span class="provider-dot"></span>GMAIL</span>
+  </header>
+  <main>
+    <section id="setup" hidden>
+      <div class="section-label">GMAIL / READ ONLY</div>
+      <h1>Connect your Gmail</h1>
+      <p class="muted">Read recent email content to find login codes on this device. No email or codes are sent to AlexWorks.</p>
+      <div class="privacy-line"><i data-lucide="shield-check" aria-hidden="true"></i><span>No email or codes stored.</span></div>
+      <button id="connect" class="button primary"><i data-lucide="mail" aria-hidden="true"></i><span>Connect Gmail</span></button>
+    </section>
+    <section id="configuration" hidden>
+      <div class="section-label">DEVELOPMENT SETUP</div>
+      <h1>OAuth client needed</h1>
+      <p class="muted">Follow the OAuth setup in the project README, using this extension ID.</p>
+      <div class="extension-id"><code id="extension-id"></code><button id="copy-id" class="icon-button" aria-label="Copy extension ID" title="Copy extension ID"><i data-lucide="copy" aria-hidden="true"></i></button></div>
+      <a class="button primary" href="https://console.cloud.google.com/auth/clients" target="_blank" rel="noreferrer"><i data-lucide="external-link" aria-hidden="true"></i>Google Cloud clients</a>
+    </section>
+    <section id="workspace" hidden>
+      <div class="account-bar"><div><div class="section-label">CONNECTED / READ ONLY</div><div id="account" class="account">Gmail</div></div>
+        <div class="tools"><button id="refresh" class="icon-button" aria-label="Refresh codes" title="Refresh codes"><i data-lucide="refresh-cw" aria-hidden="true"></i></button><button id="disconnect" class="icon-button" aria-label="Disconnect Gmail" title="Disconnect Gmail"><i data-lucide="log-out" aria-hidden="true"></i></button></div>
+      </div>
+      <div class="results-heading"><h1 id="result-title">Recent codes</h1><div class="result-meta"><span id="count" class="count" hidden></span><span class="window-label">5 MIN</span></div></div>
+      <div id="empty" class="empty"><span class="empty-icon"><i data-lucide="inbox" aria-hidden="true"></i></span><h2 id="empty-title">Checking Gmail</h2><p id="empty-detail" class="muted">Looking at the last five minutes.</p></div>
+      <div id="candidates" class="candidates"></div>
+      <button id="more" class="button secondary" hidden><i data-lucide="search" aria-hidden="true"></i><span>Check more recent messages</span></button>
+      <div class="wait-row"><button id="wait" class="button primary"><i data-lucide="timer" aria-hidden="true"></i><span>Wait for code</span></button><button id="stop" class="button secondary" hidden><i data-lucide="square" aria-hidden="true"></i><span>Stop waiting</span></button><span id="wait-time" class="muted"></span></div>
+    </section>
+    <div id="feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+  </main>
+  <footer><span class="local-note"><i data-lucide="shield-check" aria-hidden="true"></i>Local only</span><a id="revoke" href="https://myaccount.google.com/connections" target="_blank" rel="noreferrer" title="Manage and revoke CopyOTP's Google access">Manage access<i data-lucide="external-link" aria-hidden="true"></i></a></footer>
+</body>
+</html>
