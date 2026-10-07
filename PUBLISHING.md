@@ -7,6 +7,31 @@ OAuth verification for `gmail.readonly`. GitHub being public does not make OAuth
 public. No guide can guarantee Google's approval or its timing. This checklist
 prevents the common packaging, consent, and extension-ID mistakes.
 
+## Current Setup
+
+The existing store draft has Item ID `blkbbmpladceniiaepackjhajipanpmf`.
+Do not create a second item. A new **CopyOTP - Chrome Web Store** OAuth client
+has been created in the existing AlexWorks project and bound to that ID; the
+four original clients are unchanged. Local development configuration is backed
+up in ignored `artifacts/config.development.json`.
+
+The configured release is `artifacts/releases/copyotp-0.2.1.zip`. Its identity
+passed the Chrome extension-loading test, with 31 unit tests and 17 UI checks.
+The store accepted the icon, 1280x800 screenshot, and 440x280 promo tile.
+Use `docs/images/store-code.png`, not the smaller `preview.png`, in Screenshots.
+
+Public URLs:
+
+- Product: https://alexworks.app/copyotp
+- CopyOTP policy: https://alexworks.app/copyotp/privacy
+- Shared AlexWorks privacy hub: https://alexworks.app/privacy
+- Source/support: https://github.com/demenciel/copyotp
+
+The website source is `demenciel/alexworks`, deployed on Cloudflare.
+**Not yet approved or publicly installable:** Google OAuth remains Testing.
+Complete shared-app scope/domain verification, an English consent/demo video,
+reviewer access, and both review processes below before public release.
+
 ## 1. Decide how AlexWorks will publish
 
 Your current project has one AlexWorks consent screen and four OAuth clients

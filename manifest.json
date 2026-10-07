@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "CopyOTP",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Copy a recent Gmail login code without opening the email.",
   "minimum_chrome_version": "116",
   "permissions": ["identity", "storage", "clipboardWrite"],
