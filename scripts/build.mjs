@@ -13,6 +13,7 @@ if (manifest.version !== pkg.version) throw new Error('package.json and manifest
 manifest.key = config.publicKey;
 if (config.clientId) manifest.oauth2 = { client_id: config.clientId, scopes: [scope] };
 await writeFile(new URL('manifest.json', output), JSON.stringify(manifest, null, 2) + '\n');
+await writeFile(new URL('oauth-config.js', output), `export const webClientId = ${JSON.stringify(config.webClientId || '')};\n`);
 await build({
   entryPoints: ['src/background.ts', 'src/popup.ts'],
   absWorkingDir: root.pathname,
@@ -21,6 +22,7 @@ await build({
   minify: true,
   format: 'esm',
   target: 'chrome116',
+  external: ['./oauth-config.js'],
   legalComments: 'eof'
 });
 for (const name of ['popup.html', 'popup.css']) {
@@ -37,3 +39,5 @@ for (const size of [16, 32, 48, 128]) {
 console.log(`Built dist/ | Extension ID: ${extensionId(config.publicKey)}`);
 await copyFile(new URL('THIRD_PARTY_NOTICES.txt', root), new URL('THIRD_PARTY_NOTICES.txt', output));
 console.log(config.clientId ? 'OAuth configured.' : 'OAuth client ID needed. See README.md to connect Gmail.');
+console.log(config.webClientId ? 'Brave OAuth configured.' : 'Brave OAuth client ID needed. See README.md.');
+console.log(`Brave OAuth redirect: https://${extensionId(config.publicKey)}.chromiumapp.org/`);

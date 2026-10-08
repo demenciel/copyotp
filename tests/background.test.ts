@@ -52,7 +52,7 @@ Object.assign(globalThis, { chrome: {
   storage: { local: {
     setAccessLevel: async () => {}, get: async () => ({ connected: state }),
     set: async (value: Record<string, unknown>) => { writes.push(value); state = Boolean(value.connected); }
-  } },
+  }, session: { setAccessLevel: async () => {}, remove: async () => {} } },
   identity: {
     getAuthToken: async (details: { interactive: boolean }) => { tokenCalls.push(details.interactive); return auth(details.interactive); },
     removeCachedAuthToken: async (details: { token: string }) => { cleared.push(details.token); },
@@ -77,6 +77,15 @@ test('setup state prevents OAuth before a client is configured', async () => {
   const port = open(); const result = await port.reply(port.send('connect'));
   assert.equal(result.kind, 'error'); if (result.kind === 'error') assert.equal(result.code, 'setup');
   configured = true; port.disconnect();
+});
+test('a Chrome client alone cannot enable Brave or launch Chrome sign-in for Brave', async () => {
+  const port = open(); const before = tokenCalls.length;
+  const status = await port.reply(port.send('status', { browser: 'brave' }));
+  assert.equal(status.kind, 'status');
+  if (status.kind === 'status') { assert.equal(status.configured, false); assert.match(status.setupMessage!, /Web Application/); }
+  const result = await port.reply(port.send('connect', { browser: 'brave' }));
+  assert.equal(result.kind, 'error'); if (result.kind === 'error') assert.equal(result.code, 'setup');
+  assert.equal(tokenCalls.length, before); port.disconnect();
 });
 test('explicit connection stores only the connection preference; scans remain read-only', async () => {
   const port = open();

@@ -17,6 +17,7 @@ const config = await loadConfig();
 if (config.publicKey !== publicKey) {
   // A Chrome OAuth client is bound to an ID. Never carry it to a new identity.
   delete config.clientId;
+  delete config.webClientId;
 }
 await saveConfig({ ...config, publicKey });
 console.log(`Store key saved: ${expectedId}. Configure an OAuth client registered to this exact Item ID, then rebuild.`);

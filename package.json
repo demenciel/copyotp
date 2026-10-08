@@ -1,6 +1,6 @@
 {
   "name": "copyotp",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "license": "MIT",
   "private": true,
   "type": "module",
@@ -11,6 +11,7 @@
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "test:ui": "node tests/popup.mjs",
     "test:extension": "node tests/extension.mjs",
+    "test:brave": "node tests/extension.mjs --brave",
     "store:key": "node scripts/store-key.mjs",
     "package": "npm run build && node scripts/package.mjs"
   },

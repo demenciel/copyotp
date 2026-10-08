@@ -1,4 +1,4 @@
-export interface Config { publicKey: string; clientId?: string }
+export interface Config { publicKey: string; clientId?: string; webClientId?: string }
 export const configPath: URL;
 export const scope: string;
 export function loadConfig(): Promise<Config>;

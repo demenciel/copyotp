@@ -7,6 +7,12 @@ import type { Action, Candidate, NormalizedMessage, Reply, Request, Result } fro
 const icons = () => createIcons({ icons: { Copy, Mail, ShieldCheck, ExternalLink, RefreshCw, LogOut, Inbox, Search, Timer, Square, Check } });
 const element = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const port = chrome.runtime.connect({ name: 'copyotp' });
+const browser = (async (): Promise<Request['browser']> => {
+  try {
+    const brave = (navigator as Navigator & { brave?: { isBrave(): Promise<boolean> } }).brave;
+    return await brave?.isBrave() ? 'brave' : 'chrome';
+  } catch { return 'chrome'; }
+})();
 const pending = new Map<number, (result: Result) => void>();
 let requestId = 0;
 let revision = 0;
@@ -22,12 +28,13 @@ let waitDeadline: ReturnType<typeof setTimeout> | undefined;
 let rateLimitedUntil = 0;
 let closed = false;
 
-function request(action: Action, extra: Partial<Request> = {}): Promise<Result> {
+async function request(action: Action, extra: Partial<Request> = {}): Promise<Result> {
+  const browserName = await browser;
   if (closed) return Promise.resolve({ kind: 'error', code: 'api', message: 'Reopen CopyOTP to continue.' });
   return new Promise((resolve) => {
     const id = ++requestId;
     pending.set(id, resolve);
-    port.postMessage({ ...extra, id, action });
+    port.postMessage({ ...extra, id, action, browser: browserName });
   });
 }
 port.onMessage.addListener((reply: Reply) => {
@@ -250,6 +257,7 @@ void request('status').then((result) => {
   if (result.kind === 'status') {
     if (!result.configured) {
       element('configuration').hidden = false;
+      if (result.setupMessage) element('configuration-detail').textContent = result.setupMessage;
       element('extension-id').textContent = result.extensionId;
     } else { showConnection(result.connected); if (result.connected) void scan(); }
   } else if (result.kind === 'error') { element('setup').hidden = false; handleError(result); }

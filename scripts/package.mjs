@@ -29,8 +29,9 @@ const stage = await mkdtemp(join(tmpdir(), 'copyotp-release-'));
 try {
   await mkdir(join(stage, 'icons'));
   await writeFile(join(stage, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
-  const files = ['background.js', 'popup.js', 'popup.html', 'popup.css', 'THIRD_PARTY_NOTICES.txt', 'icons/16.png', 'icons/32.png', 'icons/48.png', 'icons/128.png'];
+  const files = ['background.js', 'oauth-config.js', 'popup.js', 'popup.html', 'popup.css', 'THIRD_PARTY_NOTICES.txt', 'icons/16.png', 'icons/32.png', 'icons/48.png', 'icons/128.png'];
   for (const file of files) await copyFile(join(dist, file), join(stage, file));
+  if (draft) await writeFile(join(stage, 'oauth-config.js'), "export const webClientId = '';\n");
   await copyFile(fileURLToPath(new URL('../LICENSE', import.meta.url)), join(stage, 'LICENSE'));
   await rm(archive, { force: true });
   execFileSync('zip', ['-X', '-q', archive, 'manifest.json', 'LICENSE', ...files], { cwd: stage });

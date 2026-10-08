@@ -38,11 +38,12 @@ export interface Request {
   action: Action;
   pageToken?: string;
   scanId?: string;
+  browser?: 'chrome' | 'brave';
 }
 
 export type ErrorCode = 'setup' | 'auth' | 'offline' | 'rate-limit' | 'api' | 'cancelled';
 export type Result =
-  | { kind: 'status'; configured: boolean; connected: boolean; extensionId: string }
+  | { kind: 'status'; configured: boolean; connected: boolean; extensionId: string; setupMessage?: string }
   | { kind: 'connected' }
   | { kind: 'disconnected' }
   | { kind: 'cancelled' }

@@ -1,6 +1,6 @@
 # CopyOTP Privacy Policy
 
-Effective date: October 7, 2026. Publisher: AlexWorks / demenciel.
+Effective date: October 8, 2026. Publisher: AlexWorks / demenciel.
 
 ## Access and purpose
 
@@ -15,12 +15,16 @@ messages as read.
 ## Processing, storage, and sharing
 
 Email content and codes are processed on your device and held temporarily in
-memory. The popup's data is discarded when it closes. Chrome manages OAuth
-tokens; CopyOTP does not persist them. The extension stores only a boolean
+memory. The popup's data is discarded when it closes. Chrome manages its OAuth
+token cache. On Brave, CopyOTP holds a short-lived OAuth access token in
+`chrome.storage.session`, browser memory that survives service-worker restarts
+but is cleared on browser restart, extension reload/update/disable, or disconnect.
+It stores no refresh token or client secret. Tokens are not written to persistent
+extension storage. The extension persists only a boolean
 indicating that you explicitly connected Gmail. It does not persist email
 addresses, messages, codes, or message history.
 
-CopyOTP communicates directly with Google's Gmail API using HTTPS. No mailbox
+CopyOTP communicates directly with Google's OAuth and Gmail services using HTTPS. No mailbox
 data or tokens are sent to AlexWorks, GitHub, analytics providers, AI services,
 or any other developer-controlled server. No data is sold, used for advertising,
 used to train models, or accessed by the publisher. There is no backend,
@@ -32,7 +36,8 @@ CopyOTP cannot erase clipboard history held by other software.
 
 ## Your controls
 
-Disconnect Gmail stops future scans and clears Chrome's cached tokens for this
+Disconnect Gmail stops future scans and clears browser-managed tokens and the
+Brave session token for this
 extension. To revoke Google's underlying permission, use Manage access and
 remove the applicable app in Google Account Connections. If the OAuth consent
 screen says AlexWorks, revoking that shared app may affect other AlexWorks

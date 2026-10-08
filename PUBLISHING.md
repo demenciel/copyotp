@@ -1,6 +1,6 @@
 # Chrome Web Store: CopyOTP Release Guide
 
-Checked against Google/Chrome documentation on October 7, 2026.
+Checked against Google/Chrome/Brave documentation on October 8, 2026.
 
 **Two independent approvals are required:** Chrome Web Store review and Google
 OAuth verification for `gmail.readonly`. GitHub being public does not make OAuth
@@ -15,8 +15,10 @@ has been created in the existing AlexWorks project and bound to that ID; the
 four original clients are unchanged. Local development configuration is backed
 up in ignored `artifacts/config.development.json`.
 
-The configured release is `artifacts/releases/copyotp-0.2.1.zip`. Its identity
-passed the Chrome extension-loading test, with 31 unit tests and 17 UI checks.
+The previous configured upload was `artifacts/releases/copyotp-0.2.1.zip`.
+Version **0.2.2** adds a separate Brave OAuth path. Before uploading it, complete
+the Brave client setup in the README and the additional checks below; a
+Chrome-only configuration does not enable Brave Gmail access.
 The store accepted the icon, 1280x800 screenshot, and 440x280 promo tile.
 Use `docs/images/store-code.png`, not the smaller `preview.png`, in Screenshots.
 
@@ -191,8 +193,8 @@ Sources: [restricted-scope verification](https://developers.google.com/identity/
 
 ## 6. Build the final upload ZIP
 
-Increase `version` in BOTH `package.json` and `manifest.json`, e.g. `0.2.1` for
-the configured upload after the `0.2.0` reservation draft. Update the lockfile:
+Version `0.2.2` is set in BOTH `package.json` and `manifest.json`. For later
+updates increase both versions and update the lockfile:
 
 ```sh
 npm install --package-lock-only --ignore-scripts
@@ -202,10 +204,26 @@ npm run build
 npx playwright install chromium
 npm run test:ui
 npm run test:extension
+npm run test:brave
 npm run package -- --id STORE_ITEM_ID
 ```
 
-Upload `artifacts/releases/copyotp-0.2.1.zip` to the **existing draft item**,
+Before packaging v0.2.2, create **CopyOTP - Brave**, a Web application client in
+the same active AlexWorks project, with the exact authorized redirect
+`https://blkbbmpladceniiaepackjhajipanpmf.chromiumapp.org/`. Configure its public
+client ID with `npm run configure -- --brave CLIENT_ID`. Keep the Chrome
+Extension client and all sibling-app clients intact. Include the Brave flow in
+Google's verification demo; it uses only Gmail read-only. See README's legacy
+implicit-flow security limitation. Do not substitute an embedded client secret.
+
+Run a live connect, code scan, copy, and disconnect in both Chrome and Brave.
+On Brave, check reconnect after browser restart/expired token. Automated smoke
+tests cannot prove Google accepts the configured client or test account.
+Update the live privacy page and store storage justification for the Brave
+session-memory token before submitting. Do not claim v0.2.2 is verified until
+Google approves the added client and its authorization flow.
+
+Upload `artifacts/releases/copyotp-0.2.2.zip` to the **existing draft item**,
 not Add new item. The packager includes only runtime files and LICENSE with
 `manifest.json` at the ZIP root. It excludes local config, source/test fixtures,
 screenshots, `node_modules`, and private data. It removes the development `key`
@@ -242,8 +260,8 @@ Single purpose: **Find and copy recent Gmail login codes on the user's device.**
 
 | Permission | Justification to paste |
 | --- | --- |
-| identity | Obtain a user-authorized Gmail read-only OAuth token through Chrome Identity. |
-| storage | Store only whether the user explicitly connected Gmail. No emails, codes, addresses, or tokens are persisted by CopyOTP. |
+| identity | Obtain user-authorized Gmail read-only access through Chrome's token API or Brave's intercepted Google OAuth callback. |
+| storage | Persist only the connected preference. Keep Brave's short-lived access token in browser-session memory, cleared on disconnect or browser restart. Never persist emails, codes, addresses, or tokens to extension disk storage. |
 | clipboardWrite | Copy the user's selected login code after their explicit button click. |
 | gmail.googleapis.com host | Fetch the user's recent Gmail messages directly from Google's API for local code extraction. |
 

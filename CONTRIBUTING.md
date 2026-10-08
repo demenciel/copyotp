@@ -7,7 +7,7 @@ under MIT. Please keep changes focused and preserve its client-only design.
 
 1. Fork the repository and clone your fork.
 2. Install Node.js 24, then run `npm ci`.
-3. Run `npm run build` and load `dist` in Chrome as an unpacked extension.
+3. Run `npm run build` and load `dist` in Chrome or Brave as an unpacked extension.
 4. To test live Gmail, create your own testing OAuth project/client as described
    in [README.md](README.md). Do not use another contributor's OAuth identity.
 5. Create a branch, make your change, and add focused tests.
@@ -20,6 +20,8 @@ npm run build
 npx playwright install chromium
 npm run test:ui
 npm run test:extension
+# When Brave is installed (or BRAVE_PATH is set):
+npm run test:brave
 ```
 
 An optional GitHub Actions workflow is provided in `docs/ci.yml`. The initial
@@ -39,6 +41,8 @@ real OTPs, screenshots with private account data, or your Chrome profile.
 Use synthetic email fixtures only. Do not add telemetry, remote scripts,
 server-side mail processing, automatic copying, or automatic form submission.
 New permissions or broader OAuth scopes require explicit maintainer review.
+Chrome OAuth tokens remain browser-managed. Brave access tokens belong only in
+trusted `chrome.storage.session` memory, never local/sync storage, logs, or files.
 
 Useful contributions include extraction fixtures, accessibility, translations,
 UI polish, and reliability tests. A GitHub fork does not inherit a verified

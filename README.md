@@ -1,7 +1,7 @@
 # CopyOTP
 
-A small Chrome extension for copying recent Gmail login codes while staying on
-the login page. Gmail can be closed. It uses Chrome's OAuth flow and reads Gmail
+A small Chrome and Brave desktop extension for copying recent Gmail login codes
+while staying on the login page. Gmail can be closed. It uses browser OAuth and reads Gmail
 directly; email normalization and code extraction happen on your device.
 
 ![CopyOTP interface with synthetic data](docs/images/preview.png)
@@ -29,6 +29,7 @@ needs to represent the other AlexWorks apps accurately.
 ## Build and Load
 
 Requires Node.js 22.18+ (or Node.js 24+) and Chrome 116+.
+Brave desktop uses the same build; see the separate OAuth setup below.
 
 ```sh
 npm install
@@ -53,7 +54,7 @@ client secret is generated or stored. The file and `dist` are git-ignored.
    allow an internal app; organization policies can still restrict access.
 4. In Data Access, add `https://www.googleapis.com/auth/gmail.readonly`.
 5. In Clients, create a **Chrome Extension** OAuth client. Use the extension ID
-   printed by the build as the Item ID. A Web Application client is not suitable.
+   printed by the build as the Item ID. This client is for Chrome, not Brave.
 6. Configure the resulting client ID:
 
 ```sh
@@ -64,13 +65,53 @@ The command saves the public client ID in `config.local.json` and rebuilds the
 extension. Use the actual Google-generated ID; no client secret is required.
 Reload CopyOTP in `chrome://extensions`, open its popup, and click **Connect
 Gmail**. Check that the connected email address is the account you intend to use.
-The first version uses the account selected by Chrome's Identity API.
+Chrome uses the account selected by Chrome's Identity API.
 
 See [Chrome's OAuth setup](https://developer.chrome.com/docs/extensions/how-to/integrate/oauth)
 and [Gmail scope requirements](https://developers.google.com/workspace/gmail/api/auth/scopes).
 Public distribution requires the applicable Google OAuth verification and Chrome
 Web Store review. When moving to a store-issued extension key/ID, register the
 OAuth client against that ID and update the public key in the local build config.
+
+### Brave (v0.2.2)
+
+Brave's native `getAuthToken` flow has a documented [Google redirect incompatibility](https://github.com/brave/brave-browser/issues/38066).
+CopyOTP detects Brave and uses `chrome.identity.launchWebAuthFlow` instead.
+Enabling Brave's Google-login setting alone is not the CopyOTP setup.
+
+1. In your **existing AlexWorks Google project**, create an additional **Web
+   application** OAuth client named **CopyOTP - Brave**. Keep all other clients.
+   No new project is required.
+2. Under **Authorized redirect URIs**, add the exact HTTPS callback printed by
+   `npm run build`. For the reserved store item it is:
+   `https://blkbbmpladceniiaepackjhajipanpmf.chromiumapp.org/`.
+   The trailing slash matters. Do not use the development ID for a store build.
+3. Copy only its **client ID**, never its client secret, and run:
+
+```sh
+npm run configure -- --brave YOUR_WEB_CLIENT_ID.apps.googleusercontent.com
+```
+
+4. Open `brave://extensions`, enable Developer mode, load `dist`, and click
+   **Connect Gmail**. Choose your account and grant Gmail read-only access.
+   A test account must still be on AlexWorks' Google Auth Platform test-user list.
+5. After publication, install the same Chrome Web Store item in Brave. No
+   separate Brave marketplace package or extension ID is needed.
+
+The Brave path uses Google's legacy client-side token response, with a random
+state, exact extension callback validation, and granted-scope validation. It
+requests only `gmail.readonly`, not other AlexWorks grants. The short-lived token
+is held in `chrome.storage.session` (browser memory, not disk), survives worker
+restarts, and is cleared on disconnect, browser restart, or extension reload.
+Reconnect when it expires or Gmail rejects it. No refresh token, client secret,
+backend, or automatic account switching is used.
+
+**Security limitation:** Google [discourages direct implicit flows](https://developers.google.com/identity/protocols/oauth2/javascript-implicit-flow)
+and recommends authorization code flows for new web applications. This is a
+client-only compatibility path, not an assertion that implicit OAuth is equivalent
+to PKCE. A future code-flow alternative may require a server-side exchange;
+never embed a Web application's secret in the extension to bypass that requirement.
+Google verification and store review still apply to this additional client.
 
 ## Use
 
@@ -92,9 +133,11 @@ the button. Request another code if the site reports it has expired.
 
 ## Privacy and Permissions
 
-- `identity`: authorize read-only Gmail access; Chrome manages token caching.
-- `storage`: save only whether you explicitly connected Gmail. No mail, codes,
-  account addresses, or OAuth tokens are persisted by CopyOTP.
+- `identity`: authorize read-only Gmail access; Chrome manages its token cache,
+  while Brave uses an intercepted Google OAuth callback.
+- `storage`: persist only whether you explicitly connected Gmail. Brave's
+  short-lived OAuth token is kept separately in browser-session memory. No mail,
+  codes, account addresses, or tokens are written to persistent extension storage.
 - `clipboardWrite`: copy only the selected code after your click.
 - Host access is limited to `https://gmail.googleapis.com/*`.
 
@@ -105,7 +148,7 @@ Attachments are not downloaded. Message HTML is parsed in an inert template and
 never displayed as live HTML. Email bodies and candidates remain in transient
 memory during the popup session.
 
-**Disconnect Gmail** disables further scans and clears Chrome's cached tokens.
+**Disconnect Gmail** disables further scans and clears the browser's cached tokens.
 To revoke the underlying Google grant, use **Manage access** and remove CopyOTP
 from [Google account connections](https://myaccount.google.com/connections).
 Disconnecting alone does not promise grant revocation. Copied codes remain in
@@ -122,6 +165,7 @@ npm run check
 npm test
 npm run build
 npm run test:ui
+npm run test:brave
 ```
 
 UI tests use a mock Chrome transport and synthetic email fixtures, never a live
@@ -134,6 +178,10 @@ To verify the real extension manifest, service worker, popup transport, and ID,
 run `npm run test:extension` with Playwright Chromium or Chrome for Testing.
 `CHROME_PATH` can select that executable; regular Chrome builds may disable the
 command-line flags needed to load an extension in automation.
+`npm run test:brave` uses isolated temporary Brave profiles, detects Brave, checks
+the actual extension UI/worker, and exercises OAuth, scan, copy, and disconnect
+with synthetic responses in a separate fixture build. Set `BRAVE_PATH` if Brave is not in a
+standard macOS/Linux install location. Neither smoke test proves live consent.
 
 For the live check, connect your test Gmail account, close Gmail, request a real
 login code, and copy/paste it. Verify the message remains unread. Live OAuth and

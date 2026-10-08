@@ -1,15 +1,20 @@
 import { GmailClient, scanCutoff } from './gmail.ts';
 import { AppError, GMAIL_SCOPE } from './types.ts';
 import type { Request, Result } from './types.ts';
+import { WebAuth } from './web-auth.ts';
+import { webClientId } from './oauth-config.js';
+
+const webAuth = new WebAuth(webClientId);
 
 let authRevision = 0;
 let retryAt = 0;
 const scans = new Set<AbortController>();
 
-const configured = () => Boolean(chrome.runtime.getManifest().oauth2?.client_id);
+const configured = (browser?: Request['browser']) => browser === 'brave' ? webAuth.configured() : Boolean(chrome.runtime.getManifest().oauth2?.client_id);
 const connected = async () => Boolean((await chrome.storage.local.get('connected')).connected);
 
-async function token(interactive = false): Promise<string> {
+async function token(interactive = false, browser?: Request['browser']): Promise<string> {
+  if (browser === 'brave') return webAuth.token(interactive);
   if (!configured()) throw new AppError('setup', 'Add a Chrome Extension OAuth client ID to finish setup.');
   try {
     const options = { interactive, scopes: [GMAIL_SCOPE], enableGranularPermissions: true };
@@ -24,18 +29,21 @@ async function token(interactive = false): Promise<string> {
   }
 }
 
-const gmail = new GmailClient(() => token(), (value) => chrome.identity.removeCachedAuthToken({ token: value }));
+const invalidate = (value: string, browser?: Request['browser']) => browser === 'brave'
+  ? webAuth.invalidate(value) : chrome.identity.removeCachedAuthToken({ token: value });
 
 function isRequest(value: unknown): value is Request {
   if (!value || typeof value !== 'object') return false;
   const request = value as Request;
   return Number.isSafeInteger(request.id) && request.id > 0 &&
     ['status', 'connect', 'scan', 'disconnect', 'cancel'].includes(request.action) &&
+    (request.browser === undefined || ['chrome', 'brave'].includes(request.browser)) &&
     (request.pageToken === undefined || (typeof request.pageToken === 'string' && request.pageToken.length < 2048)) &&
     (request.scanId === undefined || typeof request.scanId === 'string');
 }
 
 chrome.storage.local.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' });
+chrome.storage.session?.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' });
 
 chrome.runtime.onConnect.addListener((port) => {
   if (port.name !== 'copyotp' || port.sender?.id !== chrome.runtime.id ||
@@ -53,14 +61,16 @@ chrome.runtime.onConnect.addListener((port) => {
   async function handle(request: Request): Promise<Result> {
     switch (request.action) {
       case 'status':
-        return { kind: 'status', configured: configured(), connected: await connected(), extensionId: chrome.runtime.id };
+        return { kind: 'status', configured: configured(request.browser), connected: await connected(), extensionId: chrome.runtime.id,
+          ...(request.browser === 'brave' ? { setupMessage: 'Configure a Web Application OAuth client with the Brave redirect URL in the project README.' } : {}) };
       case 'connect': {
         const revision = authRevision;
-        const value = await token(true);
-        // OAuth can finish after its initiating popup closes. Retain only consent,
-        // so reopening the popup can scan; a newer disconnect takes precedence.
+        const value = await token(true, request.browser);
+        // OAuth can finish after its initiating popup closes. A newer disconnect
+        // takes precedence over the consent and Brave's in-memory session token.
         if (revision !== authRevision) {
-          await chrome.identity.removeCachedAuthToken({ token: value });
+          // WebAuth's generation check already prevents obsolete session writes.
+          if (request.browser !== 'brave') await invalidate(value, request.browser);
           return { kind: 'disconnected' };
         }
         await chrome.storage.local.set({ connected: true });
@@ -73,7 +83,8 @@ chrome.runtime.onConnect.addListener((port) => {
         cancel();
         email = '';
         await chrome.storage.local.set({ connected: false });
-        await chrome.identity.clearAllCachedAuthTokens();
+        await webAuth.clear();
+        if (request.browser !== 'brave') await chrome.identity.clearAllCachedAuthTokens();
         return { kind: 'disconnected' };
       case 'cancel':
         cancel();
@@ -95,6 +106,7 @@ chrome.runtime.onConnect.addListener((port) => {
         controller = scan;
         scans.add(scan);
         const signal = AbortSignal.any([scan.signal, AbortSignal.timeout(25_000)]);
+        const gmail = new GmailClient(() => token(false, request.browser), (value) => invalidate(value, request.browser));
         try {
           if (!email) email = (await gmail.profile(signal)).emailAddress;
           const result = await gmail.scan(signal, cutoff, request.pageToken);

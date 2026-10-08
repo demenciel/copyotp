@@ -31,6 +31,7 @@ try {
     page.on('pageerror', (error) => errors.push(error.message));
     page.on('request', (request) => { if (!request.url().startsWith(url.replace('/popup.html', ''))) remote.push(request.url()); });
     await page.addInitScript((scenario) => {
+      if (scenario.brave) Object.defineProperty(navigator, 'brave', { value: { isBrave: async () => true }, configurable: true });
       window.__actions = [];
       window.__copied = [];
       window.__scenario = scenario;
@@ -51,7 +52,7 @@ try {
         postMessage: (request) => {
           window.__actions.push(request);
           let result;
-          if (request.action === 'status') result = { kind: 'status', configured: scenario.configured !== false, connected: scenario.connected !== false, extensionId: 'abcdefghijklmnopabcdefghijklmnop' };
+          if (request.action === 'status') result = { kind: 'status', configured: scenario.configured !== false, connected: scenario.connected !== false, extensionId: 'abcdefghijklmnopabcdefghijklmnop', setupMessage: scenario.brave ? 'Configure a Web Application OAuth client with the Brave redirect URL in the project README.' : undefined };
           if (request.action === 'connect') result = scenario.denied ? { kind: 'error', code: 'auth', message: 'Connection was not completed. Try connecting again.' } : { kind: 'connected' };
           if (request.action === 'disconnect') result = { kind: 'disconnected' };
           if (request.action === 'cancel') result = { kind: 'cancelled' };
@@ -104,6 +105,16 @@ try {
     await page.getByRole('button', { name: 'Connect Gmail' }).click();
     await page.getByRole('button', { name: 'Copy code 001234' }).waitFor();
     assert.deepEqual(await page.evaluate(() => window.__actions.map((item) => item.action)), ['status', 'connect', 'scan']);
+  });
+  await run('Brave routes every request to its web OAuth provider', { brave: true, connected: false }, async (page) => {
+    await page.getByRole('button', { name: 'Connect Gmail' }).click();
+    await page.getByRole('button', { name: 'Copy code 001234' }).waitFor();
+    assert.ok(await page.evaluate(() => window.__actions.every((item) => item.browser === 'brave')));
+  });
+  await run('Brave missing-client state shows the correct OAuth setup', { brave: true, configured: false }, async (page) => {
+    await page.getByRole('heading', { name: 'OAuth client needed' }).waitFor();
+    assert.match(await page.locator('#configuration-detail').textContent(), /Web Application/);
+    assert.equal(await page.getByRole('button', { name: 'Connect Gmail' }).isVisible(), false);
   });
   await run('copy preserves leading zeros', {}, async (page) => {
     await page.getByRole('button', { name: 'Copy code 001234' }).click();
