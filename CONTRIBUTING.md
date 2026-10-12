@@ -24,11 +24,9 @@ npm run test:extension
 npm run test:brave
 ```
 
-An optional GitHub Actions workflow is provided in `docs/ci.yml`. The initial
-publisher token does not have the `workflow` scope, so it is intentionally a
-template, not an active workflow. To enable CI, add its contents as
-`.github/workflows/ci.yml` using GitHub's web editor or a token authorized for
-workflow changes. No repository secrets or live OAuth credentials are needed.
+GitHub Actions runs these checks (except the Brave smoke test) on every push and
+pull request using `.github/workflows/ci.yml`. No repository secrets or live
+OAuth credentials are needed.
 
 ## What to include in a pull request
 
