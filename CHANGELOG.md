@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.3
 
 - Vendor the 11 Lucide icons the popup uses and drop the `lucide` package, so
   the extension has no runtime dependencies.

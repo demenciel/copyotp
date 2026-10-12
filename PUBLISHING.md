@@ -15,10 +15,8 @@ has been created in the existing AlexWorks project and bound to that ID; the
 four original clients are unchanged. Local development configuration is backed
 up in ignored `artifacts/config.development.json`.
 
-The previous configured upload was `artifacts/releases/copyotp-0.2.1.zip`.
-Version **0.2.2** adds a separate Brave OAuth path. Before uploading it, complete
-the Brave client setup in the README and the additional checks below; a
-Chrome-only configuration does not enable Brave Gmail access.
+Version **0.2.2** (Brave OAuth path, Brave client configured) is live. Version
+**0.2.3** vendors the popup icons and adds no permission, scope, or data changes.
 The store accepted the icon, 1280x800 screenshot, and 440x280 promo tile.
 Use `docs/images/store-code.png`, not the smaller `preview.png`, in Screenshots.
 
@@ -193,7 +191,7 @@ Sources: [restricted-scope verification](https://developers.google.com/identity/
 
 ## 6. Build the final upload ZIP
 
-Version `0.2.2` is set in BOTH `package.json` and `manifest.json`. For later
+Version `0.2.3` is set in BOTH `package.json` and `manifest.json`. For later
 updates increase both versions and update the lockfile:
 
 ```sh
@@ -223,7 +221,7 @@ Update the live privacy page and store storage justification for the Brave
 session-memory token before submitting. Do not claim v0.2.2 is verified until
 Google approves the added client and its authorization flow.
 
-Upload `artifacts/releases/copyotp-0.2.2.zip` to the **existing draft item**,
+Upload `artifacts/releases/copyotp-0.2.3.zip` to the **existing item**,
 not Add new item. The packager includes only runtime files and LICENSE with
 `manifest.json` at the ZIP root. It excludes local config, source/test fixtures,
 screenshots, `node_modules`, and private data. It removes the development `key`
@@ -235,8 +233,8 @@ Package only from a clean checkout (`git status` shows no changes), so the ZIP
 matches a public commit. After uploading, tag that exact commit and push the tag:
 
 ```sh
-git tag -a v0.2.2 -m "CopyOTP 0.2.2 (Chrome Web Store upload)"
-git push origin v0.2.2
+git tag -a v0.2.3 -m "CopyOTP 0.2.3 (Chrome Web Store upload)"
+git push origin v0.2.3
 ```
 
 Never move or reuse a tag. If the store rejects an upload and you change code,
@@ -350,7 +348,7 @@ once the item is public:
 
 ```sh
 git clone https://github.com/demenciel/copyotp && cd copyotp
-git checkout v0.2.2
+git checkout v0.2.3
 npm ci
 npm run build
 curl -L -o copyotp.crx "https://clients2.google.com/service/update2/crx?response=redirect&prodversion=130&acceptformat=crx3&x=id%3Dblkbbmpladceniiaepackjhajipanpmf%26uc"
