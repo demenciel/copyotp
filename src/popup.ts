@@ -1,10 +1,10 @@
-import { createIcons, Copy, Mail, ShieldCheck, ExternalLink, RefreshCw, LogOut, Inbox, Search, Timer, Square, Check } from 'lucide';
 import { normalizeMessage } from './normalize.ts';
 import { rankCandidates } from './extract.ts';
+import { createIcons } from './icons.ts';
 import { FRESHNESS_MS } from './types.ts';
 import type { Action, Candidate, NormalizedMessage, Reply, Request, Result } from './types.ts';
 
-const icons = () => createIcons({ icons: { Copy, Mail, ShieldCheck, ExternalLink, RefreshCw, LogOut, Inbox, Search, Timer, Square, Check } });
+const icons = () => createIcons();
 const element = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
 const port = chrome.runtime.connect({ name: 'copyotp' });
 const browser = (async (): Promise<Request['browser']> => {

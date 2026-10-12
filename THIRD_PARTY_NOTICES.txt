@@ -1,4 +1,6 @@
-CopyOTP uses Lucide icons, including the geometry used in its raster app icon.
+CopyOTP includes the geometry of 11 Lucide v0.468.0 icons, vendored in
+src/icons.ts, and uses the Copy icon geometry in its raster app icon. The
+lucide package itself is not a dependency.
 
 Lucide - ISC License
 
