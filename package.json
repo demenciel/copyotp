@@ -1,6 +1,6 @@
 {
   "name": "copyotp",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "license": "MIT",
   "private": true,
   "type": "module",
@@ -14,9 +14,6 @@
     "test:brave": "node tests/extension.mjs --brave",
     "store:key": "node scripts/store-key.mjs",
     "package": "npm run build && node scripts/package.mjs"
-  },
-  "dependencies": {
-    "lucide": "^0.468.0"
   },
   "devDependencies": {
     "@types/chrome": "^0.0.287",

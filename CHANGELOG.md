@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.3
+
+- Vendor the 11 Lucide icons the popup uses and drop the `lucide` package, so
+  the extension has no runtime dependencies.
+- Document tagging each store upload and checking a store build against its tag.
+- Enable the GitHub Actions checks workflow.
+
 ## 0.2.2
 
 - Detect Brave desktop and use a separate client-side Google web OAuth flow.
